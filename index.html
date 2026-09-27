@@ -9,7 +9,7 @@ body { margin:0; padding:16px; background:#0d0d0d; font-family:'Segoe UI',system
 .container { max-width:860px; width:100%; }
 svg text { user-select:none; }
 .dot { cursor:pointer; transition:filter 0.15s; }
-.dot:hover { filter:brightness(1.25); }
+.dot:hover { filter:brightness(1.6); }
 .grid-line { stroke:#1e1e1e; stroke-width:1; stroke-dasharray:4 3; }
 .zero-line { stroke:#555; stroke-width:1; }
 .qlabel { fill:#555; font-size:10px; font-style:italic; }
@@ -41,15 +41,30 @@ svg text { user-select:none; }
 .news-tk { flex:0 0 96px; font-weight:700; font-size:13px; color:#f0f0f0; }
 .news-tk .wc { display:block; font-size:11px; font-weight:600; margin-top:2px; }
 .news-tx { flex:1; color:#cfcfcf; font-size:12.5px; line-height:1.5; }
+.news-tx strong { color:#f0f0f0; font-weight:700; }
 .news-src { color:#666; font-size:10.5px; margin-top:14px; font-style:italic; }
 .pos { color:#4ade80; } .neg { color:#f87171; }
+/* Sección 3 — Listados de potencial (V2.1) */
+.lists-section { display:flex; gap:22px; flex-wrap:wrap; margin:34px auto 10px; }
+.lst { flex:1 1 320px; min-width:0; }
+.lst-h { color:#f0f0f0; font-size:14px; font-weight:700; margin:0 0 2px; }
+.lst-h .dotmark { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:7px; vertical-align:middle; }
+.lst-crit { color:#6b6b6b; font-size:10.5px; margin:0 0 9px; }
+.lst table { width:100%; border-collapse:collapse; }
+.lst th { color:#777; font-size:10px; font-weight:600; text-align:right; padding:0 0 5px; border-bottom:1px solid #222; text-transform:uppercase; letter-spacing:.03em; }
+.lst th:first-child { text-align:left; }
+.lst td { font-size:12px; color:#cfcfcf; padding:6px 0; text-align:right; border-bottom:1px solid #161616; white-space:nowrap; }
+.lst td:first-child { text-align:left; font-weight:700; color:#f0f0f0; }
+.lst tr:last-child td { border-bottom:none; }
+.lst-empty { color:#666; font-size:11.5px; font-style:italic; padding:8px 0; }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="tabs" id="tabs"></div>
-  <svg id="chart" viewBox="0 0 820 750" xmlns="http://www.w3.org/2000/svg"></svg>
+  <svg id="chart" viewBox="0 0 820 650" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="news" class="news-section"></div>
+  <div id="lists" class="lists-section"></div>
   <div id="tooltip"></div>
 </div>
 <script>
@@ -58,12 +73,12 @@ const DATASETS = {
   comprados: {
     label:"Comprados", titleWord:"compradas", titleColor:"#4FC3F7", date:"2026-09-25",
     data:[{"ticker": "NVDA", "name": "NVIDIA Corporation", "upside": 48.16, "price": 225.07, "target": 333.47, "weekChange": 1.26, "rating": "Fuerte compra", "rsi": 58.11, "pb": 28.45, "low52": 164.27, "high52": 236.54}, {"ticker": "AMZN", "name": "Amazon.com, Inc.", "upside": 32.55, "price": 249.67, "target": 330.94, "weekChange": -1.59, "rating": "Fuerte compra", "rsi": 50.07, "pb": 20.08, "low52": 196.0, "high52": 287.2}, {"ticker": "MSFT", "name": "Microsoft Corporation", "upside": 10.69, "price": 516.17, "target": 571.36, "weekChange": 4.53, "rating": "Fuerte compra", "rsi": 64.36, "pb": 28.76, "low52": 349.2, "high52": 553.72}, {"ticker": "META", "name": "Meta Platforms, Inc.", "upside": 4.94, "price": 751.66, "target": 788.79, "weekChange": 12.9, "rating": "Fuerte compra", "rsi": 64.22, "pb": 28.31, "low52": 520.26, "high52": 779.82}, {"ticker": "GOOGL", "name": "Alphabet Inc.", "upside": 24.03, "price": 343.92, "target": 426.58, "weekChange": -1.61, "rating": "Fuerte compra", "rsi": 50.92, "pb": 17.28, "low52": 235.84, "high52": 408.61}, {"ticker": "MA", "name": "Mastercard Incorporated", "upside": 18.32, "price": 567.65, "target": 671.64, "weekChange": 0.43, "rating": "Fuerte compra", "rsi": 57.95, "pb": 31.23, "low52": 464.52, "high52": 601.23}, {"ticker": "UBER", "name": "Uber Technologies, Inc.", "upside": 45.58, "price": 69.62, "target": 101.35, "weekChange": -1.25, "rating": "Fuerte compra", "rsi": 42.64, "pb": 15.3, "low52": 65.41, "high52": 101.3}, {"ticker": "AMD", "name": "Advanced Micro Devices, Inc.", "upside": 0.78, "price": 630.63, "target": 635.54, "weekChange": 12.65, "rating": "Fuerte compra", "rsi": 71.11, "pb": 161.85, "low52": 159.33, "high52": 639.0}, {"ticker": "DIS", "name": "Walt Disney Company (The)", "upside": 20.15, "price": 106.15, "target": 127.54, "weekChange": 3.39, "rating": "Fuerte compra", "rsi": 53.67, "pb": 21.89, "low52": 92.19, "high52": 117.09}, {"ticker": "MELI", "name": "MercadoLibre, Inc.", "upside": 31.62, "price": 1752.61, "target": 2306.78, "weekChange": -1.95, "rating": "Compra", "rsi": 45.09, "pb": 47.69, "low52": 1495.0, "high52": 2548.5}, {"ticker": "KO", "name": "Coca-Cola Company (The)", "upside": 9.6, "price": 87.81, "target": 96.24, "weekChange": -0.5, "rating": "Compra", "rsi": 61.5, "pb": 26.46, "low52": 65.35, "high52": 92.49}, {"ticker": "NFLX", "name": "Netflix, Inc.", "upside": 31.52, "price": 71.15, "target": 93.57, "weekChange": -0.9, "rating": "Compra", "rsi": 37.28, "pb": 22.41, "low52": 65.08, "high52": 124.86}, {"ticker": "MDT", "name": "Medtronic plc.", "upside": 17.33, "price": 88.64, "target": 104.0, "weekChange": -3.79, "rating": "Compra", "rsi": 51.39, "pb": 21.82, "low52": 73.31, "high52": 106.33}, {"ticker": "MCD", "name": "McDonald's Corporation", "upside": 27.26, "price": 236.5, "target": 300.97, "weekChange": -4.73, "rating": "Compra", "rsi": 24.65, "pb": 19.21, "low52": 234.03, "high52": 341.75}, {"ticker": "AAPL", "name": "Apple Inc.", "upside": -1.0, "price": 341.07, "target": 337.68, "weekChange": 1.47, "rating": "Compra", "rsi": 66.78, "pb": 39.1, "low52": 243.42, "high52": 345.34}, {"ticker": "MMM", "name": "3M Company", "upside": 13.02, "price": 169.55, "target": 191.63, "weekChange": 2.21, "rating": "Compra", "rsi": 54.68, "pb": 30.1, "low52": 139.34, "high52": 184.9}, {"ticker": "TSLA", "name": "Tesla, Inc.", "upside": 1.34, "price": 372.11, "target": 377.09, "weekChange": 2.15, "rating": "Compra", "rsi": 49.54, "pb": 345.73, "low52": 297.38, "high52": 498.83}],
-    news:{"META": "La gran ganadora de la cartera: su IA Muse llegó al primer lugar y disparó a Meta hasta US$1,98 billones de capitalización, superando a SpaceX de Musk, con alzas de precio objetivo de Deutsche Bank, TD Cowen, Canaccord y Piper Sandler; el viernes un jurado la declaró culpable de haber engañado a consumidores en Nuevo México.", "AMD": "Segunda mejor de la cartera: la fiebre de CPUs que desató el lanzamiento de Muse la llevó a máximo histórico y al club del billón de dólares (+183% en el año), con Bank of America diciendo que puede ganar la carrera de US$211.000 millones en CPUs y un analista apuntando a US$750.", "MCD": "La peor de la cartera: tocó mínimo de cuatro años tras su día del inversionista, donde se comprometió a llegar a 98% de franquicias al 2030; los analistas ven el camino accidentado por el monto y el momento de la inversión que eso exige.", "MSFT": "Sube tras rehacer Copilot de punta a punta —nuevo Home y modo colaborativo— y con Goldman proyectando que el capex de IA de los hyperscalers crecerá 50%.", "MDT": "Cae sin noticia corporativa propia en Benzinga esa semana: solo apareció en listados de actividad de ballenas y de acciones de salud con alto dividendo, acompañando la rotación fuera de los defensivos.", "DIS": "Sube con el alza de precios de Disney+, que subió 13% su plan sin publicidad a US$21,49 al mes —casi el doble que en 2023—, más la reestructuración de su división de productos de consumo.", "MMM": "Sube porque se le acabaron los bajistas: Bernstein la subió a Market Perform con mayor precio objetivo y Wells Fargo inició cobertura en Equal-Weight.", "TSLA": "Sube con el avance de Optimus —el presidente de Faraday dijo que comercializarlo el próximo año es 'muy realista'— y el anuncio de entregas del Semi, pese a los reportes de problemas en las manos del robot."}
+    news:{"META": "La gran ganadora de la cartera: su IA Muse llegó al primer lugar y disparó a Meta hasta <strong>US$1,98 billones de capitalización, superando a SpaceX de Musk</strong>, con alzas de precio objetivo de Deutsche Bank, TD Cowen, Canaccord y Piper Sandler; el viernes un jurado la declaró culpable de haber engañado a consumidores en Nuevo México.", "AMD": "Segunda mejor de la cartera: la fiebre de CPUs que desató el lanzamiento de Muse la llevó a <strong>máximo histórico y al club del billón de dólares</strong> (+183% en el año), con Bank of America diciendo que puede ganar la carrera de US$211.000 millones en CPUs y un analista apuntando a US$750.", "MCD": "La peor de la cartera: <strong>tocó mínimo de cuatro años tras su día del inversionista</strong>, donde se comprometió a llegar a 98% de franquicias al 2030; los analistas ven el camino accidentado por el monto y el momento de la inversión que eso exige.", "MSFT": "Sube tras <strong>rehacer Copilot de punta a punta</strong> —nuevo Home y modo colaborativo— y con Goldman proyectando que el capex de IA de los hyperscalers crecerá 50%.", "MDT": "<strong>Cae sin noticia corporativa propia en Benzinga esa semana</strong>: solo apareció en listados de actividad de ballenas y de acciones de salud con alto dividendo, acompañando la rotación fuera de los defensivos.", "DIS": "Sube con <strong>el alza de 13% del plan sin publicidad de Disney+, a US$21,49 al mes</strong> —casi el doble que en 2023—, más la reestructuración de su división de productos de consumo.", "MMM": "Sube porque <strong>se le acabaron los bajistas</strong>: Bernstein la subió a Market Perform con mayor precio objetivo y Wells Fargo inició cobertura en Equal-Weight.", "TSLA": "Sube con el avance de Optimus —el presidente de Faraday dijo que <strong>comercializarlo el próximo año es 'muy realista'</strong>— y el anuncio de entregas del Semi, pese a los reportes de problemas en las manos del robot."}
   },
   oportunidades: {
     label:"Oportunidades", titleWord:"oportunidades", titleColor:"#FFD600", date:"2026-09-25",
     data:[{"ticker": "ANET", "name": "Arista Networks, Inc.", "upside": 20.48, "price": 206.55, "target": 248.86, "weekChange": 3.59, "rating": "Fuerte compra", "rsi": 65.78, "pb": 65.12, "low52": 114.52, "high52": 214.89}, {"ticker": "MU", "name": "Micron Technology, Inc.", "upside": 45.61, "price": 1082.28, "target": 1575.88, "weekChange": 6.54, "rating": "Fuerte compra", "rsi": 65.31, "pb": 24.5, "low52": 159.97, "high52": 1255.0}, {"ticker": "AVGO", "name": "Broadcom Inc.", "upside": 51.34, "price": 352.81, "target": 533.94, "weekChange": -1.34, "rating": "Fuerte compra", "rsi": 45.45, "pb": 45.04, "low52": 289.96, "high52": 495.0}, {"ticker": "TSM", "name": "Taiwan Semiconductor Manufacturing Company Ltd.", "upside": 20.65, "price": 450.61, "target": 543.66, "weekChange": 3.67, "rating": "Fuerte compra", "rsi": 66.88, "pb": 32.52, "low52": 266.82, "high52": 479.0}, {"ticker": "MRVL", "name": "Marvell Technology, Inc.", "upside": 12.21, "price": 261.94, "target": 293.93, "weekChange": 7.24, "rating": "Fuerte compra", "rsi": 64.95, "pb": 86.25, "low52": 70.69, "high52": 329.88}, {"ticker": "AMAT", "name": "Applied Materials, Inc.", "upside": 38.21, "price": 485.0, "target": 670.33, "weekChange": 9.09, "rating": "Fuerte compra", "rsi": 53.59, "pb": 41.82, "low52": 202.87, "high52": 739.67}, {"ticker": "ASML", "name": "ASML Holding N.V.", "upside": 34.47, "price": 1743.94, "target": 2345.02, "weekChange": 3.81, "rating": "Fuerte compra", "rsi": 57.02, "pb": 54.29, "low52": 935.41, "high52": 1999.96}, {"ticker": "LRCX", "name": "Lam Research Corporation", "upside": 21.37, "price": 315.21, "target": 382.58, "weekChange": 9.41, "rating": "Fuerte compra", "rsi": 55.07, "pb": 54.69, "low52": 130.81, "high52": 438.5}, {"ticker": "APP", "name": "Applovin Corporation", "upside": 60.77, "price": 310.75, "target": 499.58, "weekChange": 0.87, "rating": "Fuerte compra", "rsi": 36.83, "pb": 23.89, "low52": 297.5, "high52": 745.61}, {"ticker": "BAC", "name": "Bank of America Corporation", "upside": 20.33, "price": 56.7, "target": 68.23, "weekChange": -1.78, "rating": "Fuerte compra", "rsi": 47.13, "pb": 13.05, "low52": 46.12, "high52": 65.22}, {"ticker": "CVX", "name": "Chevron Corporation", "upside": 9.73, "price": 204.45, "target": 224.33, "weekChange": -2.42, "rating": "Compra", "rsi": 58.03, "pb": 19.6, "low52": 146.49, "high52": 217.78}, {"ticker": "SPCX", "name": "Space Exploration Technologies Corp", "upside": 49.94, "price": 148.68, "target": 222.94, "weekChange": -2.64, "rating": "Compra", "rsi": 46.36, "pb": null, "low52": 104.83, "high52": 225.64}, {"ticker": "KLAC", "name": "KLA Corporation", "upside": 26.7, "price": 187.92, "target": 238.09, "weekChange": 6.18, "rating": "Compra", "rsi": 50.33, "pb": 51.24, "low52": 98.1, "high52": 307.37}, {"ticker": "IBKR", "name": "Interactive Brokers Group, Inc.", "upside": 21.92, "price": 89.24, "target": 108.8, "weekChange": -1.6, "rating": "Compra", "rsi": 54.09, "pb": 35.53, "low52": 58.95, "high52": 98.75}, {"ticker": "ARM", "name": "Arm Holdings plc", "upside": -3.89, "price": 310.32, "target": 298.26, "weekChange": 12.59, "rating": "Compra", "rsi": 58.88, "pb": 318.34, "low52": 100.02, "high52": 452.7}, {"ticker": "BX", "name": "Blackstone Inc.", "upside": 21.12, "price": 118.42, "target": 143.43, "weekChange": -5.23, "rating": "Compra", "rsi": 41.05, "pb": 26.57, "low52": 101.73, "high52": 177.23}, {"ticker": "EL", "name": "Estee Lauder Companies, Inc. (The)", "upside": 15.11, "price": 94.47, "target": 108.74, "weekChange": 1.11, "rating": "Compra", "rsi": 53.43, "pb": 189.85, "low52": 66.22, "high52": 121.64}, {"ticker": "VZ", "name": "Verizon Communications Inc.", "upside": 7.67, "price": 47.08, "target": 50.69, "weekChange": -2.1, "rating": "Compra", "rsi": 49.85, "pb": 12.26, "low52": 38.39, "high52": 51.68}, {"ticker": "INCY", "name": "Incyte Corporation", "upside": 4.05, "price": 123.89, "target": 128.91, "weekChange": -1.13, "rating": "Compra", "rsi": 62.35, "pb": 15.79, "low52": 82.52, "high52": 132.6}, {"ticker": "SBUX", "name": "Starbucks Corporation", "upside": 19.59, "price": 94.86, "target": 113.44, "weekChange": -1.01, "rating": "Compra", "rsi": 41.49, "pb": 54.7, "low52": 77.99, "high52": 110.51}, {"ticker": "SWK", "name": "Stanley Black & Decker, Inc.", "upside": 10.2, "price": 91.4, "target": 100.73, "weekChange": 2.03, "rating": "Neutral", "rsi": 53.81, "pb": 22.29, "low52": 61.9, "high52": 104.68}, {"ticker": "DUOL", "name": "Duolingo, Inc.", "upside": -6.42, "price": 143.51, "target": 134.29, "weekChange": 1.13, "rating": "Neutral", "rsi": 53.11, "pb": 17.21, "low52": 87.89, "high52": 353.0}, {"ticker": "HPQ", "name": "HP Inc.", "upside": -12.5, "price": 31.3, "target": 27.39, "weekChange": -9.01, "rating": "Neutral", "rsi": 61.0, "pb": 11.93, "low52": 17.56, "high52": 36.23}],
-    news:{"ARM": "La que más sube de la lista: la fiebre de CPUs que encendió el lanzamiento de Muse de Meta la empujó con fuerza, pese al bache del jueves por los reportes de 'fuerza mayor' de Oracle.", "LRCX": "Sube en bloque con el resto de los semiconductores, sin noticia corporativa propia esa semana en Benzinga.", "HPQ": "La peor de la lista: advirtió que espera una demanda de PCs más débil en 2027, justo en una semana en que la plata se fue toda a IA y semiconductores.", "AMAT": "Sube con todo el equipamiento para semiconductores en la ola de la memoria y la IA, sin noticia corporativa propia; el único titular en contra fue la apuesta bajista de Michael Burry contra el boom de la memoria.", "MRVL": "Sube tras el inicio de cobertura de Seaport Global y un alza de precio objetivo, montada en el rally de infraestructura de IA.", "MU": "Sube antes de sus resultados: un modelo le da 80% de probabilidad de superar a todos los analistas de Wall Street y tres chatbots de IA la eligieron como su favorita para la próxima semana.", "KLAC": "Sube con el resto de los semiconductores y con el respaldo de Allen Bond, de Jensen Investment, que la puso entre sus favoritas junto a Broadcom y Amphenol.", "BX": "La que más cae de la lista: el crédito privado siguió bajo presión —el fondo de US$26.000 millones de Apollo enfrentó una nueva corrida de retiros— y se sumó la salida de su principal ejecutivo de private equity.", "ASML": "Sube con el complejo de litografía y memoria, sin noticia corporativa propia esa semana; el driver fue la lectura de que controla el ritmo de las 'fábricas de tokens' de la IA.", "TSM": "Sube tras el reporte de que subirá hasta 6% el precio de sus chips porque la capacidad de fundición seguirá apretada hasta 2030 por el boom de IA, más las alianzas ampliadas con Cadence y Synopsys.", "ANET": "Sube sin noticia corporativa propia: fue elegida en los 'Final Trades' de CNBC junto a Broadcom y Cisco, y acompañó el rally de infraestructura de IA.", "SPCX": "Cae arrastrada por los ETF apalancados de SpaceX, que se desplomaron más de 6% ante la cercanía del vuelo de Starship 14 y una venta de insiders por US$52,5 millones.", "CVX": "Retrocede pese a que HSBC mantuvo Buy y subió su precio objetivo: el crudo cedió en la semana y el sector cargó con el ruido político por el intento de prohibir las exportaciones de diésel.", "VZ": "Cae sin noticia relevante más allá de una inversión de US$70 millones en formación en IA: con la tasa a 30 años sobre 5,5% los proxies de renta fija siguen castigados.", "SWK": "Sube sin noticia corporativa propia esa semana; acompañó el rebote de los cíclicos industriales."}
+    news:{"ARM": "La que más sube de la lista: <strong>la fiebre de CPUs que encendió el lanzamiento de Muse de Meta</strong> la empujó con fuerza, pese al bache del jueves por los reportes de 'fuerza mayor' de Oracle.", "LRCX": "<strong>Sube en bloque con el resto de los semiconductores</strong>, sin noticia corporativa propia esa semana en Benzinga.", "HPQ": "La peor de la lista: <strong>advirtió que espera una demanda de PCs más débil en 2027</strong>, justo en una semana en que la plata se fue toda a IA y semiconductores.", "AMAT": "Sube con todo el equipamiento para semiconductores <strong>en la ola de la memoria y la IA</strong>, sin noticia corporativa propia; el único titular en contra fue la apuesta bajista de Michael Burry contra el boom de la memoria.", "MRVL": "Sube tras <strong>el inicio de cobertura de Seaport Global</strong> y un alza de precio objetivo, montada en el rally de infraestructura de IA.", "MU": "Sube antes de sus resultados: <strong>un modelo le da 80% de probabilidad de superar a todos los analistas de Wall Street</strong> y tres chatbots de IA la eligieron como su favorita para la próxima semana.", "KLAC": "Sube con el resto de los semiconductores y con <strong>el respaldo de Allen Bond, de Jensen Investment</strong>, que la puso entre sus favoritas junto a Broadcom y Amphenol.", "BX": "La que más cae de la lista: <strong>el crédito privado siguió bajo presión</strong> —el fondo de US$26.000 millones de Apollo enfrentó una nueva corrida de retiros— y se sumó la salida de su principal ejecutivo de private equity.", "ASML": "Sube con el complejo de litografía y memoria, sin noticia corporativa propia esa semana; el driver fue <strong>la lectura de que controla el ritmo de las 'fábricas de tokens' de la IA</strong>.", "TSM": "Sube tras el reporte de que <strong>subirá hasta 6% el precio de sus chips</strong> porque la capacidad de fundición seguirá apretada hasta 2030 por el boom de IA, más las alianzas ampliadas con Cadence y Synopsys.", "ANET": "Sube sin noticia corporativa propia: <strong>fue elegida en los 'Final Trades' de CNBC</strong> junto a Broadcom y Cisco, y acompañó el rally de infraestructura de IA.", "SPCX": "Cae arrastrada por los ETF apalancados de SpaceX, que <strong>se desplomaron más de 6% ante la cercanía del vuelo de Starship 14</strong> y una venta de insiders por US$52,5 millones.", "CVX": "Retrocede pese a que HSBC mantuvo Buy y subió su precio objetivo: <strong>el crudo cedió en la semana</strong> y el sector cargó con el ruido político por el intento de prohibir las exportaciones de diésel.", "VZ": "Cae sin noticia relevante más allá de una inversión de US$70 millones en formación en IA: <strong>con la tasa a 30 años sobre 5,5% los proxies de renta fija siguen castigados</strong>.", "SWK": "<strong>Sube sin noticia corporativa propia esa semana</strong>; acompañó el rebote de los cíclicos industriales."}
   },
   ipsa: {
     label:"IPSA", titleWord:"IPSA", titleColor:"#EF5350", date:"2026-09-25",
@@ -74,11 +89,25 @@ const DATASETS = {
 
 const TAB_ORDER = ["comprados","oportunidades","ipsa"];
 
+/* ====================== ZONAS DE ACCIÓN (V2.1 — 19.3) ======================
+   Umbrales definidos UNA sola vez. Se usan para dibujar las zonas del gráfico
+   y para armar los listados de potencial. No duplicar estos números. */
+const ZONES = {
+  buy:  { xMax: -0.50, upMin: 25, color:'#5B8DEF', crit:'Posición en rango ≤ -50% y upside ≥ 25%' },
+  sell: { xMin:  0.65, upMax:  8, color:'#8E8AA8', crit:'Posición en rango ≥ +65% y upside ≤ 8%'  }
+};
+const ZONE_LABELS = {
+  comprados:     { buy:'Zona aumentar', sell:'Zona reducir',   lbuy:'Potencial de compra',  lsell:'Potencial de venta' },
+  oportunidades: { buy:'Zona entrar',   sell:'Zona descartar', lbuy:'Potencial de entrada', lsell:'Descartar'          },
+  ipsa:          { buy:'Zona aumentar', sell:'Zona reducir',   lbuy:'Potencial de compra',  lsell:'Potencial de venta' }
+};
+
 /* ====================== LAYOUT ====================== */
-const W=820, H=750, ml=58, mr=20, mt=70, mb=270;
+const W=820, H=650, ml=58, mr=20, mt=70, mb=170;
 const PW = W - ml - mr;
 const PH = H - mt - mb;
 const FF = "'Segoe UI',system-ui,sans-serif";
+const R_FIJO = 7;
 
 const svg = document.getElementById('chart');
 const NS = 'http://www.w3.org/2000/svg';
@@ -104,12 +133,34 @@ function xS(v){ return ml + (v - xDom[0]) / (xDom[1] - xDom[0]) * PW; }
 function lerpC(a,b,t){
   return `rgb(${Math.round(a[0]+(b[0]-a[0])*t)}, ${Math.round(a[1]+(b[1]-a[1])*t)}, ${Math.round(a[2]+(b[2]-a[2])*t)})`;
 }
-const ROJO=[220,38,38], AMARILLO=[250,204,21], VERDE=[22,163,74];
-function wcColor(wc){
-  const c = Math.max(-5, Math.min(5, wc));
-  if (c < 0) return lerpC(ROJO, AMARILLO, (c+5)/5);
-  return lerpC(AMARILLO, VERDE, c/5);
+
+/* --- 19.2 Color → RSI (14), escala FIJA con clamp 30–70 --- */
+const VERDE=[22,163,74], AMARILLO=[250,204,21], ROJO=[220,38,38];
+function rsiColor(rsi){
+  if (rsi == null || isNaN(rsi)) return 'rgb(128,128,128)';
+  const c = Math.max(30, Math.min(70, rsi));
+  if (c <= 50) return lerpC(VERDE, AMARILLO, (c - 30) / 20);
+  return lerpC(AMARILLO, ROJO, (c - 50) / 20);
 }
+
+/* --- 19.3 Pertenencia a zonas (una sola fuente de verdad) --- */
+const inBuy  = d => xNormVal(d) <= ZONES.buy.xMax  && d.upside >= ZONES.buy.upMin;
+const inSell = d => xNormVal(d) >= ZONES.sell.xMin && d.upside <= ZONES.sell.upMax;
+
+/* --- 19.4 Regresión lineal simple (OLS): upside vs xNorm --- */
+function ols(DATA){
+  const pts = DATA.map(d => [xNormVal(d), d.upside]).filter(p => isFinite(p[0]) && isFinite(p[1]));
+  const n = pts.length;
+  if (n < 2) return null;
+  const mx = pts.reduce((s,p) => s+p[0], 0) / n;
+  const my = pts.reduce((s,p) => s+p[1], 0) / n;
+  let num = 0, den = 0;
+  for (const [x,y] of pts){ num += (x-mx)*(y-my); den += (x-mx)*(x-mx); }
+  if (den === 0) return null;
+  const b = num / den;
+  return { b, a: my - b*mx };
+}
+
 function niceTicks(min, max, n=6){
   const range = max - min;
   const step = Math.pow(10, Math.floor(Math.log10(range / n)));
@@ -121,9 +172,13 @@ function niceTicks(min, max, n=6){
   return ticks;
 }
 
+const fmtPct  = v => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+const fmtPos  = d => { const p = Math.round(xNormVal(d)*100); return (p > 0 ? '+' : '') + p + '%'; };
+
 /* ====================== RENDER DEL GRÁFICO ====================== */
-function renderChart(ds){
+function renderChart(ds, key){
   const DATA = ds.data, DATE = ds.date;
+  const L = ZONE_LABELS[key] || ZONE_LABELS.comprados;
   svg.innerHTML = '';
 
   const ys = DATA.map(d => d.upside);
@@ -131,21 +186,35 @@ function renderChart(ds){
   const yPad = (yMax - yMin) * 0.18 || 1;
   const yDom = [yMin - yPad, yMax + yPad];
   const yS = v => mt + (v - yDom[0]) / (yDom[1] - yDom[0]) * PH;
-
-  const rsiVals = DATA.map(d => d.rsi).filter(v => v != null && !isNaN(v));
-  const rsiMin = Math.min(...rsiVals), rsiMax = Math.max(...rsiVals);
-  const R_MIN = 7, R_MAX = 28;
-  function rsiR(rsi){
-    if (rsi == null || isNaN(rsi)) return R_MIN;
-    if (rsiMax === rsiMin) return (R_MIN + R_MAX) / 2;
-    const t = (rsi - rsiMin) / (rsiMax - rsiMin);
-    return R_MIN + t * (R_MAX - R_MIN);
-  }
+  const clampY = y => Math.max(mt, Math.min(mt + PH, y));
 
   el('rect', { x:0, y:0, width:W, height:H, fill:'#0d0d0d' });
   const defs = el('defs', {});
   const clipEl = el('clipPath', { id:'plot' }, defs);
   el('rect', { x:ml, y:mt, width:PW, height:PH }, clipEl);
+
+  /* --- 19.3 Zonas de acción (detrás de todo lo demás) --- */
+  const zoneG = el('g', { 'clip-path':'url(#plot)' });
+  // Zona de compra/aumentar: inferior izquierda
+  const bx1 = ml, bx2 = xS(ZONES.buy.xMax);
+  const by1 = clampY(yS(ZONES.buy.upMin)), by2 = mt + PH;
+  if (bx2 > bx1 + 1 && by2 > by1 + 1){
+    el('rect', { x:bx1, y:by1, width:bx2-bx1, height:by2-by1, fill:ZONES.buy.color,
+      'fill-opacity':0.08, stroke:ZONES.buy.color, 'stroke-opacity':0.45,
+      'stroke-width':1, 'stroke-dasharray':'5 4' }, zoneG);
+    tx(L.buy, { x:bx1+8, y:mt+PH-22, fill:ZONES.buy.color, 'fill-opacity':0.85,
+      'font-size':10, 'font-weight':600, 'font-family':FF }, zoneG);
+  }
+  // Zona de venta/reducir: superior derecha
+  const sx1 = xS(ZONES.sell.xMin), sx2 = ml + PW;
+  const sy1 = mt, sy2 = clampY(yS(ZONES.sell.upMax));
+  if (sx2 > sx1 + 1 && sy2 > sy1 + 1){
+    el('rect', { x:sx1, y:sy1, width:sx2-sx1, height:sy2-sy1, fill:ZONES.sell.color,
+      'fill-opacity':0.08, stroke:ZONES.sell.color, 'stroke-opacity':0.45,
+      'stroke-width':1, 'stroke-dasharray':'5 4' }, zoneG);
+    tx(L.sell, { x:sx2-8, y:mt+28, fill:ZONES.sell.color, 'fill-opacity':0.85,
+      'font-size':10, 'font-weight':600, 'text-anchor':'end', 'font-family':FF }, zoneG);
+  }
 
   const xTicks = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1];
   for (const v of xTicks){
@@ -165,6 +234,17 @@ function renderChart(ds){
   const y0 = yS(0);
   if (y0 >= mt && y0 <= mt+PH) el('line', { x1:ml, y1:y0, x2:ml+PW, y2:y0, class:'zero-line' });
 
+  /* --- 19.4 Línea de tendencia OLS --- */
+  const fit = ols(DATA);
+  if (fit){
+    el('line', {
+      x1: xS(xDom[0]), y1: yS(fit.a + fit.b*xDom[0]),
+      x2: xS(xDom[1]), y2: yS(fit.a + fit.b*xDom[1]),
+      stroke:'#cccccc', 'stroke-opacity':0.35, 'stroke-width':1.4,
+      'stroke-dasharray':'6 5'
+    }, el('g', { 'clip-path':'url(#plot)' }));
+  }
+
   el('rect', { x:ml, y:mt, width:PW, height:PH, fill:'none', stroke:'#444', 'stroke-width':1 });
 
   tx('Bajo upside / cerca del mínimo', { x:ml+8,    y:mt+14,   class:'qlabel', 'font-family':FF });
@@ -182,20 +262,22 @@ function renderChart(ds){
   const titleEl = el('text', { x:W/2, y:22, 'text-anchor':'middle', 'font-size':16,
     'font-weight':700, 'font-family':FF, fill:'#f0f0f0' });
   titleEl.innerHTML = `Mapa de acciones <tspan fill="${ds.titleColor}">${ds.titleWord}</tspan> (${DATE})`;
-  tx('Eje X: Posición en rango 52 semanas  |  Eje Y: Upside al objetivo  |  Color: Variación semanal (semáforo)  |  Tamaño: RSI (14)', {
+  tx('Eje X: Posición en rango 52 semanas  |  Eje Y: Upside al objetivo  |  Color: RSI (14)  |  Línea punteada: tendencia', {
     x:W/2, y:40, 'text-anchor':'middle', 'font-size':10.5, fill:'#777', 'font-family':FF });
 
-  const gd = el('linearGradient', { id:'wcGrad', x1:'0%', y1:'0%', x2:'100%', y2:'0%' }, defs);
-  [{o:'0%',c:'rgb(220,38,38)'},{o:'50%',c:'rgb(250,204,21)'},{o:'100%',c:'rgb(22,163,74)'}].forEach(s => {
+  /* --- Gradiente de la leyenda: verde (sobrevendido) → amarillo → rojo (sobrecomprado) --- */
+  const gd = el('linearGradient', { id:'rsiGrad', x1:'0%', y1:'0%', x2:'100%', y2:'0%' }, defs);
+  [{o:'0%',c:'rgb(22,163,74)'},{o:'50%',c:'rgb(250,204,21)'},{o:'100%',c:'rgb(220,38,38)'}].forEach(s => {
     const st = el('stop', { offset:s.o }, gd); st.style.stopColor = s.c;
   });
 
+  /* --- 19.1 Burbujas de radio fijo, color por RSI --- */
   const dotsG = el('g', { 'clip-path':'url(#plot)' });
   const lblG  = el('g', {});
   DATA.forEach(d => {
-    const cx = xS(xNormVal(d)), cy = yS(d.upside), r = rsiR(d.rsi), fill = wcColor(d.weekChange);
-    const circ = el('circle', { cx, cy, r, fill, 'fill-opacity':0.85, stroke:'#ffffff',
-      'stroke-width':1.3, 'stroke-opacity':0.7, class:'dot' }, dotsG);
+    const cx = xS(xNormVal(d)), cy = yS(d.upside), r = R_FIJO, fill = rsiColor(d.rsi);
+    const circ = el('circle', { cx, cy, r, fill, 'fill-opacity':0.9, stroke:'#ffffff',
+      'stroke-width':1.1, 'stroke-opacity':0.6, class:'dot' }, dotsG);
     const nearRight = cx + r + 4 + d.ticker.length*7 > ml + PW;
     const lx = nearRight ? cx - r - 4 : cx + r + 4;
     const anchor = nearRight ? 'end' : 'start';
@@ -210,51 +292,78 @@ function renderChart(ds){
     [circ, lbl].forEach(n => { n.addEventListener('mouseenter', hov); n.addEventListener('mousemove', mv); n.addEventListener('mouseleave', lv); });
   });
 
+  /* --- 19.2 Leyenda: única, color → RSI --- */
   const sepY = xDescY + 18;
   el('line', { x1:ml, y1:sepY, x2:ml+PW, y2:sepY, stroke:'#2a2a2a', 'stroke-width':1 });
   const R1 = sepY + 20;
-  tx('Color → Variación semanal (semáforo)', { x:ml, y:R1+10, fill:'#666', 'font-size':10.5, 'font-weight':600, 'font-family':FF });
-  el('rect', { x:ml, y:R1+18, width:PW, height:14, fill:'url(#wcGrad)', rx:3 });
-  tx('Bajó  (≤ -5%)',   { x:ml,      y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'start',  'font-family':FF });
-  tx('Sin cambio (0%)', { x:ml+PW/2, y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'middle', 'font-family':FF });
-  tx('Subió  (≥ +5%)',  { x:ml+PW,   y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'end',    'font-family':FF });
-  const R2 = R1 + 80;
-  tx('Tamaño → RSI (14)', { x:ml, y:R2+10, fill:'#666', 'font-size':10.5, 'font-weight':600, 'font-family':FF });
-  [{r:7,label:'RSI bajo'},{r:16,label:'RSI medio'},{r:25,label:'RSI alto'}].reduce((px, ex) => {
-    const cy2 = R2 + 22 + ex.r;
-    el('circle', { cx: px+ex.r, cy: cy2, r: ex.r, fill:'#999', 'fill-opacity':0.5, stroke:'#ccc', 'stroke-width':1.2 });
-    tx(ex.label, { x: px+ex.r, y: cy2+ex.r+14, fill:'#777', 'font-size':10, 'text-anchor':'middle', 'font-family':FF });
-    return px + ex.r*2 + 75;
-  }, ml + 10);
+  tx('Color → RSI (14)', { x:ml, y:R1+10, fill:'#666', 'font-size':10.5, 'font-weight':600, 'font-family':FF });
+  el('rect', { x:ml, y:R1+18, width:PW, height:14, fill:'url(#rsiGrad)', rx:3 });
+  tx('Sobrevendido (≤30)',   { x:ml,      y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'start',  'font-family':FF });
+  tx('Neutro (50)',          { x:ml+PW/2, y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'middle', 'font-family':FF });
+  tx('Sobrecomprado (≥70)',  { x:ml+PW,   y:R1+48, fill:'#888', 'font-size':10, 'text-anchor':'end',    'font-family':FF });
 
   renderNews(DATA, DATE, ds.news);
+  renderLists(DATA, L);
 }
 
-/* ====================== SECCIÓN 2 — NOTICIAS (Benzinga) ====================== */
+/* ============ SECCIÓN 2 — NOTICIAS (Benzinga) — 19.5 ============
+   Filtro |weekChange| ≥ 2%. Orden: weekChange ASCENDENTE (peor arriba). */
 function renderNews(DATA, DATE, NEWS){
   const wrap = document.getElementById('news');
   if (!wrap) return;
   if (!NEWS){ wrap.innerHTML = ''; return; }
   const movers = DATA.filter(d => Math.abs(d.weekChange) >= 2 && NEWS[d.ticker])
-    .sort((a,b) => Math.abs(b.weekChange) - Math.abs(a.weekChange));
+    .sort((a,b) => a.weekChange - b.weekChange);
   let html = '<div class="news-h">¿Qué movió a cada acción esta semana?</div>'
-    + '<div class="news-sub">Solo activos con variación semanal ≥ ±2% · Semana al ' + DATE + '</div>';
+    + '<div class="news-sub">Solo activos con variación semanal ≥ ±2% · De peor a mejor desempeño · Semana al ' + DATE + '</div>';
   movers.forEach(d => {
     const cls = d.weekChange >= 0 ? 'pos' : 'neg';
-    const wc = (d.weekChange >= 0 ? '+' : '') + d.weekChange.toFixed(2) + '%';
     html += '<div class="news-row"><div class="news-tk">' + d.ticker
-      + '<span class="wc ' + cls + '">' + wc + '</span></div>'
+      + '<span class="wc ' + cls + '">' + fmtPct(d.weekChange) + '</span></div>'
       + '<div class="news-tx">' + NEWS[d.ticker] + '</div></div>';
   });
   html += '<div class="news-src">Fuente: Benzinga.</div>';
   wrap.innerHTML = html;
 }
 
+/* ============ SECCIÓN 3 — LISTADOS DE POTENCIAL — 19.6 ============
+   Se generan automáticamente desde ZONES. No editar a mano. */
+function listTable(rows){
+  if (!rows.length) return '<div class="lst-empty">Sin activos en esta zona esta semana</div>';
+  let h = '<table><thead><tr><th>Ticker</th><th>Upside</th><th>Pos. rango</th><th>RSI (14)</th><th>Var. sem.</th></tr></thead><tbody>';
+  rows.forEach(d => {
+    const wcCls = d.weekChange >= 0 ? 'pos' : 'neg';
+    const rsiTxt = d.rsi != null ? d.rsi.toFixed(1) : 'N/D';
+    h += '<tr><td>' + d.ticker + '</td>'
+       + '<td>' + d.upside.toFixed(2) + '%</td>'
+       + '<td>' + fmtPos(d) + '</td>'
+       + '<td style="color:' + rsiColor(d.rsi) + ';font-weight:600">' + rsiTxt + '</td>'
+       + '<td class="' + wcCls + '">' + fmtPct(d.weekChange) + '</td></tr>';
+  });
+  return h + '</tbody></table>';
+}
+function renderLists(DATA, L){
+  const wrap = document.getElementById('lists');
+  if (!wrap) return;
+  const buys  = DATA.filter(inBuy).sort((a,b) => b.upside - a.upside);
+  const sells = DATA.filter(inSell).sort((a,b) => a.upside - b.upside);
+  wrap.innerHTML =
+      '<div class="lst">'
+    +   '<div class="lst-h"><span class="dotmark" style="background:' + ZONES.buy.color + '"></span>' + L.lbuy + '</div>'
+    +   '<div class="lst-crit">' + ZONES.buy.crit + '</div>'
+    +   listTable(buys)
+    + '</div>'
+    + '<div class="lst">'
+    +   '<div class="lst-h"><span class="dotmark" style="background:' + ZONES.sell.color + '"></span>' + L.lsell + '</div>'
+    +   '<div class="lst-crit">' + ZONES.sell.crit + '</div>'
+    +   listTable(sells)
+    + '</div>';
+}
+
 /* ====================== TOOLTIP ====================== */
 const tt = document.getElementById('tooltip');
 function showTT(e, d){
   const wc = d.weekChange >= 0 ? `<span class="pos">+${d.weekChange.toFixed(2)}%</span>` : `<span class="neg">${d.weekChange.toFixed(2)}%</span>`;
-  const posPct = Math.round(xNormVal(d)*100);
   tt.innerHTML = `
     <div class="tt">${d.ticker}</div>
     <div class="tn">${d.name}</div>
@@ -264,7 +373,7 @@ function showTT(e, d){
     <div class="tr">Var. semanal: <b>${wc}</b></div>
     <div class="tr">Mín 52s: <b>$${d.low52 != null ? d.low52.toLocaleString('en-US',{maximumFractionDigits:2}) : 'N/D'}</b></div>
     <div class="tr">Máx 52s: <b>$${d.high52 != null ? d.high52.toLocaleString('en-US',{maximumFractionDigits:2}) : 'N/D'}</b></div>
-    <div class="tr">Posición en rango: <b>${(posPct>0?'+':'')+posPct}%</b></div>
+    <div class="tr">Posición en rango: <b>${fmtPos(d)}</b></div>
     <div class="tr">RSI (14): <b>${d.rsi != null ? d.rsi.toFixed(1) : 'N/D'}</b></div>
     <div class="tr">Ratio P/E: <b>${d.pb ? d.pb.toFixed(1) : 'N/D'}</b></div>
     <div class="tr">Rating: <b>${d.rating}</b></div>`;
@@ -289,7 +398,7 @@ function selectTab(key){
     b.style.borderBottomColor = on ? DATASETS[k].titleColor : 'transparent';
   });
   hideTT();
-  renderChart(DATASETS[key]);
+  renderChart(DATASETS[key], key);
 }
 TAB_ORDER.forEach(k => {
   const b = document.createElement('button');
